@@ -14,6 +14,7 @@ class BTrecvMsgThread implements Runnable {
     static Status currentState = Status.INITIAL_STATE;
     static GoodKind current_good;
     public static BTconnector btConn;
+    BTconnector mBTconnector = new BTconnector();
 
     enum Status {
         INITIAL_STATE,
@@ -71,7 +72,7 @@ class BTrecvMsgThread implements Runnable {
             istream = MainActivity.mBTInputStream;
             if (istream == null) continue;
             try {
-                if (istream.available() > 0) {
+//                if (istream.available() > 0) {
                     c = (char) istream.read();
                     Log.d(MainActivity.TAG, "rcvdata is:" + c);
 //                    if (rcvdata.charAt(0) == 'y') {
@@ -104,11 +105,20 @@ class BTrecvMsgThread implements Runnable {
                         msg = MainActivity.mMainHandler.obtainMessage(MSG_SHOOT_PHOTO, MSG_IS_D_AREA, 1, c);
                         MainActivity.mMainHandler.sendMessage(msg);
                     }
+//                }
+            } catch (IOException e) {
+                Log.v(MainActivity.TAG, "In BTrecvMsgThread IO Exception");
+                Log.v(MainActivity.TAG, "BT disconnected!");
+                mBTconnector.enableBT();
+                if (mBTconnector.connectBT()) {
+                    Log.i(MainActivity.TAG, "reconnect BT successfully!");
+                    MainActivity.mBTInputStream = mBTconnector.getInputStream();
+                    MainActivity.mBTOutputStream = mBTconnector.getOutputStream();
+                } else {
+                    Log.v(MainActivity.TAG, "reconnect BT failed");
                 }
-        }catch(IOException e){
-            continue;
+            }
         }
-    }
 
-}
+    }
 }

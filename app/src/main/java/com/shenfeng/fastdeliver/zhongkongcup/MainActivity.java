@@ -57,11 +57,11 @@ public class MainActivity extends Activity implements CvCameraViewListener2, OnT
     private boolean mIsColorSelected = false;
 
     //TODO 测试参数， 需要修改
-    private static final Scalar YELLOSHSV = new Scalar(33, 150, 170);
-    private static final Scalar REDHSV = new Scalar(235, 150, 140);
-    private static final Scalar GREENHSV = new Scalar(100, 200, 140);
-    private static final Scalar BLUEHSV = new Scalar(157, 190, 140);
-    private static final Scalar GRAYHSV = new Scalar(145, 20, 150);
+    public static final Scalar YELLOSHSV = new Scalar(33, 150, 170);
+    public static final Scalar REDHSV = new Scalar(235, 150, 140);
+    public static final Scalar GREENHSV = new Scalar(100, 200, 140);
+    public static final Scalar BLUEHSV = new Scalar(157, 190, 140);
+    public static final Scalar GRAYHSV = new Scalar(145, 20, 150);
 
     static Mat mat_meiNianDa;
     static Mat mat_fengDa;
@@ -98,6 +98,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2, OnT
     private MenuItem mItemJianYi;
     private MenuItem mItemXueBi;
     private MenuItem mItemDarea;
+    private MenuItem mItemFlash;
     public static Mat mRGBA;
     private boolean mIsGettingHSV = false;
     private boolean FourPhotoModel = false;
@@ -127,8 +128,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2, OnT
 
     public static Handler mMainHandler = new Handler() {
 
-        public void prepareForTakePhoto()
-        {
+        public void prepareForTakePhoto() {
             mOpenCvCameraView.autoAdjustFocalOnFour();
             try {
                 Thread.currentThread().sleep(1000);
@@ -137,6 +137,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2, OnT
             }
 
         }
+
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
@@ -170,7 +171,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2, OnT
                     mBlobDetector.setHsvColor(BLUEHSV);
                     prepareForTakePhoto();
                     Log.i(MainActivity.TAG, "Begin to recognize meinianda");
-                    mBTOutputStream.write(ProcessFourBlock("Blue", false));
+                    mBTOutputStream.write(ProcessFourBlock("meiNianDa", false));
                 } else if (msg.arg1 == BTrecvMsgThread.MSG_IS_JIANYI) {
 //                    BTrecvMsgThread.current_good = BTrecvMsgThread.GoodKind.GOOD_JIANYI;
 //                    BTrecvMsgThread.currentState = BTrecvMsgThread.Status.ImageToBeProcessed_STATE;
@@ -178,7 +179,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2, OnT
                     mBlobDetector.setHsvColor(BLUEHSV);
                     prepareForTakePhoto();
                     Log.i(MainActivity.TAG, "Begin to recognize jianyi");
-                    mBTOutputStream.write(ProcessFourBlock("Blue", false));
+                    mBTOutputStream.write(ProcessFourBlock("jianyi", false));
 
                 } else if (msg.arg1 == BTrecvMsgThread.MSG_IS_XUEBI) {
                     BTrecvMsgThread.current_good = BTrecvMsgThread.GoodKind.GOOD_XUEBI;
@@ -363,27 +364,27 @@ public class MainActivity extends Activity implements CvCameraViewListener2, OnT
 
                 isDetectingBlock = false;
             } else if (sDetectMode == DetectMode.DetectMeiNianDa) {
-                double mnd_min_dist = sORBfeatureDetector.process(mat_meiNianDa, mRGBA);
-                double fd_min_dist = sORBfeatureDetector.process(mat_fengDa, mRGBA);
-
-                Log.i(featureDetectTAG, "average dist: 美年达:" + mnd_min_dist + " 芬达:" + fd_min_dist);
-                if (mnd_min_dist < fd_min_dist && mnd_min_dist != -1 && fd_min_dist != -1) {
-                    Log.i(featureDetectTAG, "检测到美年达");
-                } else {
-                    Log.i(featureDetectTAG, "检测到芬达");
-                }
+                mBlobDetector.setHsvColor(BLUEHSV);
+                prepareForTakePhoto();
+                Log.i(MainActivity.TAG, "Begin to recognize meiNianDa");
+                ProcessFourBlock("meiNianDa", false);
+//                double mnd_min_dist = sORBfeatureDetector.process(mat_meiNianDa, mRGBA);
+//                double fd_min_dist = sORBfeatureDetector.process(mat_fengDa, mRGBA);
+//
+//                Log.i(featureDetectTAG, "average dist: 美年达:" + mnd_min_dist + " 芬达:" + fd_min_dist);
+//                if (mnd_min_dist < fd_min_dist && mnd_min_dist != -1 && fd_min_dist != -1) {
+//                    Log.i(featureDetectTAG, "检测到美年达");
+//                } else {
+//                    Log.i(featureDetectTAG, "检测到芬达");
+//                }
             } else if (sDetectMode == DetectMode.DetectXueBi) {
 //                if (FourPhotoModel) {
 //                ProcessFourBottle(mat_xueBi, mat_xueHua, "雪碧");
                 mBlobDetector.setHsvColor(BLUEHSV);
                 prepareForTakePhoto();
                 Log.i(MainActivity.TAG, "Begin to recognize xuebi");
-                try {
-                    mBTOutputStream.write(ProcessFourBlock("Blue", false));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-//                } else {
+                ProcessFourBlock("Blue", false);
+                //                } else {
 //                    double xuebi_avr_dist = sORBfeatureDetector.process(mat_xueBi, mRGBA);
 //                    double xuehua_avr_dist = sORBfeatureDetector.process(mat_xueHua, mRGBA);
 //                    Log.i(featureDetectTAG, "average dist 雪碧:" + xuebi_avr_dist + " 雪花:" + xuehua_avr_dist);
@@ -400,13 +401,9 @@ public class MainActivity extends Activity implements CvCameraViewListener2, OnT
 
                 mBlobDetector.setHsvColor(BLUEHSV);
                 prepareForTakePhoto();
-                Log.i(MainActivity.TAG, "Begin to recognize xuebi");
-                try {
-                    mBTOutputStream.write(ProcessFourBlock("Blue", false));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-//                Log.i(featureDetectTAG, "average dist: 健怡:" + jy_avr_dist + " 百事:" + bs_arv_dist);
+                Log.i(MainActivity.TAG, "Begin to recognize jianyi");
+                ProcessFourBlock("jianyi", false);
+                //                Log.i(featureDetectTAG, "average dist: 健怡:" + jy_avr_dist + " 百事:" + bs_arv_dist);
 //                if (jy_avr_dist < bs_arv_dist && jy_avr_dist != -1 && bs_arv_dist != -1) {
 //                    Log.i(featureDetectTAG, "检测到健怡");
 //                } else {
@@ -480,6 +477,31 @@ public class MainActivity extends Activity implements CvCameraViewListener2, OnT
                 Log.d(TAG, name + " Block detected in right bottom");
                 region += 1;
             }
+        } else if (name == "jianyi" || name == "meiNianDa") {
+            double minArea = 10000;
+            double areaLeftUp = mBlobDetector.process(mRGBA_leftUp, isRedBlock);
+            double areaLeftBtm = mBlobDetector.process(mRGBA_leftBtm, isRedBlock);
+            double areaRightUp = mBlobDetector.process(mRGBA_rightUp, isRedBlock);
+            double areaRightBtm = mBlobDetector.process(mRGBA_rightBtm, isRedBlock);
+            if (areaLeftUp < minArea) minArea = areaLeftUp;
+            if (areaLeftBtm < minArea) minArea = areaLeftBtm;
+            if (areaRightUp < minArea) minArea = areaRightUp;
+            if (areaRightBtm < minArea) minArea = areaRightBtm;
+
+            if (minArea == areaLeftUp) {
+                Log.d(TAG, name + " Block detected in left up!");
+                region += 4;
+            } else if (minArea == areaLeftBtm) {
+                Log.d(TAG, name + " Block detected in left bottom");
+                region += 8;
+            } else if (minArea == areaRightUp) {
+                Log.d(TAG, name + " Block detected in right up");
+                region += 2;
+            } else if (minArea == areaRightBtm) {
+                Log.d(TAG, name + " Block detected in right bottom");
+                region += 1;
+            }
+
         } else {
             double maxArea = 0;
             double maxAreaLeftUp = mBlobDetector.process(mRGBA_leftUp, isRedBlock);
@@ -493,16 +515,13 @@ public class MainActivity extends Activity implements CvCameraViewListener2, OnT
             if (maxArea == maxAreaLeftUp) {
                 Log.d(TAG, name + " Block detected in left up!");
                 region += 4;
-            }
-            else if (maxArea == maxAreaLeftBtm) {
+            } else if (maxArea == maxAreaLeftBtm) {
                 Log.d(TAG, name + " Block detected in left bottom");
                 region += 8;
-            }
-            else if (maxArea == maxAreaRightUp) {
+            } else if (maxArea == maxAreaRightUp) {
                 Log.d(TAG, name + " Block detected in right up");
                 region += 2;
-            }
-            else if (maxArea == maxAreaRightBtm) {
+            } else if (maxArea == maxAreaRightBtm) {
                 Log.d(TAG, name + " Block detected in right bottom");
                 region += 1;
             }
@@ -638,6 +657,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2, OnT
         mItemRedBlock = menu.add("Red Block");
         mItemGreenBlock = menu.add("Green Block");
         mItemBlueBlock = menu.add("Blue Block");
+        mItemFlash = menu.add("Flash on");
         mItemMeiNianDa = menu.add("美年达");
         mItemJianYi = menu.add("健怡");
         mItemXueBi = menu.add("雪碧");
@@ -649,6 +669,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2, OnT
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
         if (item == mItemYellowBlock) {
             mBlobDetector.setHsvColor(YELLOSHSV);
             sDetectMode = DetectMode.DetectYellowBlock;
@@ -684,6 +705,8 @@ public class MainActivity extends Activity implements CvCameraViewListener2, OnT
         } else if (item == mAutoAdjustFocal) {
             //识别四张图的时候在四个物体上分别聚焦
             mOpenCvCameraView.autoAdjustFocalOnFour();
+        } else if(item == mItemFlash) {
+            mOpenCvCameraView.setFlashMode(this, MyCameraView.FLASHON);
         }
         return true;
     }
@@ -696,8 +719,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2, OnT
         return new Scalar(pointMatRgba.get(0, 0));
     }
 
-    public void prepareForTakePhoto()
-    {
+    public void prepareForTakePhoto() {
         mOpenCvCameraView.setFlashMode(this, MyCameraView.FLASHON); //flash mode on
         mOpenCvCameraView.autoAdjustFocalOnFour();
         try {
@@ -707,10 +729,11 @@ public class MainActivity extends Activity implements CvCameraViewListener2, OnT
         }
 
     }
-    public class BTreconnect implements Runnable{
+
+    public class BTreconnect implements Runnable {
         @Override
         public void run() {
-            while(true) {
+            while (true) {
                 try {
                     Thread.currentThread().sleep(1000);
                 } catch (InterruptedException e) {
@@ -718,7 +741,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2, OnT
                 }
                 if (!mBTconnector.isconnected()) {
                     Log.v(MainActivity.TAG, "BT disconnected!");
-                    if(mBTconnector.connectBT()) {
+                    if (mBTconnector.connectBT()) {
                         Log.i(MainActivity.TAG, "reconnect BT successfully!");
                         mBTInputStream = mBTconnector.getInputStream();
                         mBTOutputStream = mBTconnector.getOutputStream();

@@ -22,8 +22,7 @@ public class ColorBlobDetector {
     // Minimum contour area in percent for contours filtering
     private static double mMinContourArea = 0.1;
     // Color radius for range checking in HSV color space
-    private Scalar mColorRadius = new Scalar(20, 100, 100, 0);
-    private Scalar mGrayColorRadius = new Scalar(20, 50, 50, 0);
+    private Scalar mColorRadius = new Scalar(20, 70, 70, 0);
     private Mat mSpectrum = new Mat();
     private Scalar hsvColor = new Scalar(0);
     private List<MatOfPoint> mContours = new ArrayList<MatOfPoint>();
@@ -44,6 +43,13 @@ public class ColorBlobDetector {
 
     public void setHsvColor(Scalar hsvColor) {
         Log.i(MainActivity.TAG, "set the HsvColor " + hsvColor.toString());
+        if(hsvColor == MainActivity.YELLOSHSV) {
+            Log.i(MainActivity.TAG, "set yellow color radius(20,70,70,0)");
+            setColorRadius(new Scalar(20, 70, 50, 0));
+        } else {
+            Log.i(MainActivity.TAG, "set nonYellow color radius(20,100,100,0)");
+            setColorRadius(new Scalar(20, 100, 100, 0));
+        }
         this.hsvColor = hsvColor;
         double minH = (hsvColor.val[0] >= mColorRadius.val[0]) ? hsvColor.val[0] - mColorRadius.val[0] : 0;
         double maxH = (hsvColor.val[0] + mColorRadius.val[0] <= 255) ? hsvColor.val[0] + mColorRadius.val[0] : 255;
